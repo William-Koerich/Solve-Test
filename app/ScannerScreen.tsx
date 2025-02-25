@@ -1,36 +1,58 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert, Image } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
+import { findProductByCode, IProduct } from "./services/api";
+
+interface ScannedProduct extends IProduct {
+  id: number;
+}
 
 export default function ScannerScreen() {
   const [hasPermission, requestPermission] = useCameraPermissions();
-  const [scannedCodes, setScannedCodes] = useState<string[]>([]);
+  const [scannedProducts, setScannedProducts] = useState<ScannedProduct[]>([]);
   const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [isScanningBlocked, setIsScanningBlocked] = useState<boolean>(false); // 🔒 Bloqueia a leitura repetida
+  const [isScanningBlocked, setIsScanningBlocked] = useState<boolean>(false);
 
   useEffect(() => {
     if (!hasPermission) {
       requestPermission();
     }
-  }, [hasPermission, requestPermission]);
+  }, [hasPermission]);
 
-  // 📌 Função para lidar com a leitura do código
-  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
-    if (isScanningBlocked) return; // 🔒 Bloqueia leituras repetidas antes da confirmação
+  const handleBarcodeScanned = ({ data }: { data: string }) => {
+    if (isScanningBlocked) return;
 
-    setIsScanningBlocked(true); // 🔒 Impede leituras adicionais até a confirmação
-    setScannedCodes((prevCodes) => [...prevCodes, data]);
+    setIsScanningBlocked(true); // Bloqueia novas leituras enquanto processa
 
-    Alert.alert("Código escaneado!", `Tipo: ${type}\nValor: ${data}`, [
-      {
-        text: "OK",
-        onPress: () => {
-          setIsScanningBlocked(false); // 🔓 Desbloqueia a leitura após o OK
-          setIsScanning(false); // ❌ Fecha a câmera automaticamente
+    const product = findProductByCode(data);
+
+    if (product) {
+      Alert.alert("Produto encontrado!", `${product.name}\nPreço: ${product.price}`, [
+        {
+          text: "OK",
+          onPress: () => {
+            setScannedProducts((prev) => [...prev, { ...product, id: Date.now() }]);
+            setIsScanningBlocked(false);
+            setIsScanning(false); // Fecha a câmera após sucesso
+          },
         },
-      },
-    ]);
+      ]);
+    } else {
+      Alert.alert("Produto não encontrado", "Esse código de barras não está cadastrado.", [
+        {
+          text: "Tentar novamente",
+          onPress: () => {
+            setIsScanningBlocked(false); // Reativa a câmera
+          },
+        },
+      ]);
+    }
+  };
+
+  const startScanning = () => {
+    setIsScanning(true);
+    setIsScanningBlocked(false);
   };
 
   const stopScanning = () => {
@@ -38,7 +60,7 @@ export default function ScannerScreen() {
   };
 
   if (!hasPermission) {
-    return <Text>Solicitando permissão de câmera...</Text>;
+    return <Text>Solicitando permissão da câmera...</Text>;
   }
 
   if (!hasPermission.granted) {
@@ -55,7 +77,7 @@ export default function ScannerScreen() {
   return (
     <View style={styles.container}>
       {!isScanning && (
-        <TouchableOpacity style={styles.startButton} onPress={() => setIsScanning(true)}>
+        <TouchableOpacity style={styles.startButton} onPress={startScanning}>
           <Text style={styles.startButtonText}>Iniciar Escaneamento</Text>
         </TouchableOpacity>
       )}
@@ -70,13 +92,22 @@ export default function ScannerScreen() {
         </CameraView>
       )}
 
-      {!isScanning && scannedCodes.length > 0 && (
-        <View style={styles.stopScanContainer}>
-          <Text style={styles.title}>Códigos Escaneados:</Text>
+      {/* Lista de produtos escaneados */}
+      {scannedProducts.length > 0 && (
+        <View style={styles.tableContainer}>
+          <Text style={styles.title}>Produtos Escaneados:</Text>
           <FlatList
-            data={scannedCodes}
-            renderItem={({ item }) => <Text style={styles.codeText}>{item}</Text>}
-            keyExtractor={(item, index) => index.toString()}
+            data={scannedProducts}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.row}>
+                <Image source={{ uri: item.image }} style={styles.productImage} />
+                <View>
+                  <Text style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.productPrice}>{item.price}</Text>
+                </View>
+              </View>
+            )}
           />
         </View>
       )}
@@ -118,18 +149,36 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
   },
-  stopScanContainer: {
+  tableContainer: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    width: "90%",
+    marginTop: 20,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
+    textAlign: "center",
   },
-  codeText: {
-    fontSize: 18,
-    marginVertical: 10,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  productImage: {
+    width: 60,
+    height: 60,
+    marginRight: 15,
+    borderRadius: 8,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  productPrice: {
+    fontSize: 14,
+    color: "#555",
   },
 });

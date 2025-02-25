@@ -2,7 +2,7 @@ const data = [
     {
       name: "Pringles Original",
       price: "R$ 9,90",
-      code: "5053990156009",
+      code: "5901234123457",
       image:
         "https://res.cloudinary.com/dubsqkz8e/image/upload/v1645980254/rn/IMG_3104_ez56pm.jpg",
     },
