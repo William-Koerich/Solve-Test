@@ -11,6 +11,7 @@ const db = SQLite.openDatabase(
 
 export const setupDatabase = async () => {
   try {
+    // Criar a tabela de produtos escaneados
     await db.transaction(async (tx) => {
       await tx.executeSql(
         `CREATE TABLE IF NOT EXISTS scanned_products (
@@ -23,16 +24,62 @@ export const setupDatabase = async () => {
         );`
       );
     });
-    console.log("Tabela criada!");
+    console.log("Tabela de produtos escaneados criada!");
+
+    await db.transaction(async (tx) => {
+      await tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          email TEXT NOT NULL,
+          password TEXT NOT NULL
+        );`
+      );
+    });
+    console.log("Tabela de usuários criada!");
+
+    const userExists = await checkIfUserExists();
+    if (!userExists) {
+      await insertDefaultUser();
+    }
   } catch (error) {
-    console.error("Erro ao criar tabela:", error);
+    console.error("Erro ao criar tabelas:", error);
+  }
+};
+
+const checkIfUserExists = async () => {
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [resultSet] = await tx.executeSql(
+        `SELECT * FROM users WHERE email = ?;`,
+        ['teste@email.com']
+      );
+      return resultSet.rows.length > 0;
+    });
+    return result;
+  } catch (error) {
+    console.error("Erro ao verificar usuário:", error);
+    return false;
+  }
+};
+
+const insertDefaultUser = async () => {
+  try {
+    await db.transaction(async (tx) => {
+      await tx.executeSql(
+        `INSERT INTO users (email, password) VALUES (?, ?);`,
+        ['teste@email.com', '123456']
+      );
+    });
+    console.log("Usuário padrão inserido com sucesso!");
+  } catch (error) {
+    console.error("Erro ao inserir usuário padrão:", error);
   }
 };
 
 // Inserir um produto escaneado
 export const saveProduct = async (userId: string, name: string, price: string, code: string, image: string) => {
   try {
-    await db.transaction(async (tx: { executeSql: (arg0: string, arg1: string[]) => any; }) => {
+    await db.transaction(async (tx) => {
       await tx.executeSql(
         `INSERT INTO scanned_products (userId, name, price, code, image) VALUES (?, ?, ?, ?, ?);`,
         [userId, name, price, code, image]
@@ -44,7 +91,6 @@ export const saveProduct = async (userId: string, name: string, price: string, c
   }
 };
 
-// Buscar todos os produtos do usuário logado
 export const getProductsByUser = async (userId: string) => {
   try {
     return new Promise((resolve, reject) => {
@@ -67,7 +113,6 @@ export const getProductsByUser = async (userId: string) => {
   }
 };
 
-// Limpar produtos de um usuário (se precisar)
 export const clearUserProducts = async (userId: string) => {
   try {
     await db.transaction(async (tx) => {
