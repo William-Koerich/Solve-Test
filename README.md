@@ -89,7 +89,7 @@ Caso o código escaneado não esteja cadastrado, será exibida uma mensagem info
 
 ## 📸 Capturas de Tela
 
-📷 *Adicione aqui imagens do seu aplicativo para mostrar a interface*
+![Funcionamento do aplicativo](assets/images/aplicativo.gif)
 
 ---
 
@@ -101,3 +101,7 @@ Caso o código escaneado não esteja cadastrado, será exibida uma mensagem info
 - Expo
 
 ---
+
+
+💡 **Dica:** Para uma melhor experiência, experimente dar zoom nos códigos de barras disponíveis! 🚀
+
