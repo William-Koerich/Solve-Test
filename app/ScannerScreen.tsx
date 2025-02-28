@@ -39,7 +39,7 @@ export default function ScannerScreen() {
         },
       ]);
     } else {
-      Alert.alert("Produto não encontrado", "Esse código de barras não está cadastrado.", [
+      Alert.alert("Produto não encontrado", `Esse código de barras ${data} não está cadastrado.`, [
         {
           text: "Tentar novamente",
           onPress: () => {

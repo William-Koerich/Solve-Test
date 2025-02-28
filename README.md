@@ -1,50 +1,103 @@
-# Welcome to your Expo app 👋
+# 📱 Scanner de Código de Barras
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Este é um aplicativo React Native que permite escanear códigos de barras e verificar se o produto correspondente está cadastrado. Caso o código não esteja registrado, o usuário será notificado.
 
-## Get started
+## 🚀 Funcionalidades
 
-1. Install dependencies
+- Escaneamento de códigos de barras
+- Exibição de detalhes dos produtos cadastrados
+- Notificação caso o produto não esteja registrado
 
-   ```bash
+---
+
+## 📥 Instalação
+
+### Pré-requisitos
+
+Certifique-se de ter instalado:
+
+- Node.js (v16+)
+
+- React Native CLI
+
+- Expo
+
+
+
+### Passos para instalar o projeto
+
+1. Clone este repositório:
+   ```sh
+   git clone https://github.com/William-Koerich/Solve-Test.git
+   ```
+2. Acesse a pasta do projeto:
+   ```sh
+   cd Solve-Test
+   ```
+3. Instale as dependências:
+   ```sh
    npm install
    ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
+   ou
+   ```sh
+   yarn install
    ```
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## ▶️ Como rodar o projeto
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Para dispositivos físicos (Android e iOS)
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```sh
+npx react-native run-android  # Para Android
+npx react-native run-ios  # Para iOS
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Para rodar no Expo
 
-## Learn more
+Se estiver utilizando Expo, execute:
 
-To learn more about developing your project with Expo, look at the following resources:
+```sh
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+E escaneie o QR Code com o app Expo Go.
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 🔑 Informações de Login
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Para testar o app, utilize as seguintes credenciais:
+
+- **E-mail:** `teste@email.com`
+- **Senha:** `123456`
+
+---
+
+## 📂 Produtos Cadastrados
+
+Os códigos de barras disponíveis já cadastrados estão dentro da pasta:
+
+```
+assets/images/barcode
+```
+
+Caso o código escaneado não esteja cadastrado, será exibida uma mensagem informando o código do produto não encontrado.
+
+---
+
+## 📸 Capturas de Tela
+
+📷 *Adicione aqui imagens do seu aplicativo para mostrar a interface*
+
+---
+
+## 🛠 Tecnologias Utilizadas
+
+- React Native
+- TypeScript
+- React Navigation
+- Expo
+
+---

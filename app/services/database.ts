@@ -1,125 +1,44 @@
-import SQLite from "react-native-sqlite-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-SQLite.DEBUG(true);
-SQLite.enablePromise(true);
+const STORAGE_KEY = '@scanned_products';
 
-const db = SQLite.openDatabase(
-  { name: "scanner.db", location: "default" },
-  () => console.log("Banco aberto com sucesso"),
-  (error) => console.error("Erro ao abrir o banco:", error)
-);
+export interface Product {
+  id: string;
+  name: string;
+  price: string;
+  code: string;
+  image: string;
+}
 
-export const setupDatabase = async () => {
+// Salvar um novo produto
+export const saveProduct = async (product: Product) => {
   try {
-    // Criar a tabela de produtos escaneados
-    await db.transaction(async (tx) => {
-      await tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS scanned_products (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          userId TEXT NOT NULL,
-          name TEXT,
-          price TEXT,
-          code TEXT UNIQUE,
-          image TEXT
-        );`
-      );
-    });
-    console.log("Tabela de produtos escaneados criada!");
-
-    await db.transaction(async (tx) => {
-      await tx.executeSql(
-        `CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          email TEXT NOT NULL,
-          password TEXT NOT NULL
-        );`
-      );
-    });
-    console.log("Tabela de usuários criada!");
-
-    const userExists = await checkIfUserExists();
-    if (!userExists) {
-      await insertDefaultUser();
-    }
+    const products = await getProducts();
+    const updatedProducts = [...products, product];
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProducts));
+    console.log('Produto salvo:', product.name);
   } catch (error) {
-    console.error("Erro ao criar tabelas:", error);
+    console.error('Erro ao salvar produto:', error);
   }
 };
 
-const checkIfUserExists = async () => {
+// Obter todos os produtos
+export const getProducts = async (): Promise<Product[]> => {
   try {
-    const result = await db.transaction(async (tx) => {
-      const [resultSet] = await tx.executeSql(
-        `SELECT * FROM users WHERE email = ?;`,
-        ['teste@email.com']
-      );
-      return resultSet.rows.length > 0;
-    });
-    return result;
+    const storedProducts = await AsyncStorage.getItem(STORAGE_KEY);
+    return storedProducts ? JSON.parse(storedProducts) : [];
   } catch (error) {
-    console.error("Erro ao verificar usuário:", error);
-    return false;
+    console.error('Erro ao buscar produtos:', error);
+    return [];
   }
 };
 
-const insertDefaultUser = async () => {
+// Limpar todos os produtos
+export const clearProducts = async () => {
   try {
-    await db.transaction(async (tx) => {
-      await tx.executeSql(
-        `INSERT INTO users (email, password) VALUES (?, ?);`,
-        ['teste@email.com', '123456']
-      );
-    });
-    console.log("Usuário padrão inserido com sucesso!");
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    console.log('Todos os produtos foram removidos');
   } catch (error) {
-    console.error("Erro ao inserir usuário padrão:", error);
-  }
-};
-
-// Inserir um produto escaneado
-export const saveProduct = async (userId: string, name: string, price: string, code: string, image: string) => {
-  try {
-    await db.transaction(async (tx) => {
-      await tx.executeSql(
-        `INSERT INTO scanned_products (userId, name, price, code, image) VALUES (?, ?, ?, ?, ?);`,
-        [userId, name, price, code, image]
-      );
-    });
-    console.log("Produto salvo:", name);
-  } catch (error) {
-    console.error("Erro ao salvar produto:", error);
-  }
-};
-
-export const getProductsByUser = async (userId: string) => {
-  try {
-    return new Promise((resolve, reject) => {
-      db.transaction((tx) => {
-        tx.executeSql(
-          `SELECT * FROM scanned_products WHERE userId = ?;`,
-          [userId],
-          (_, results) => {
-            resolve(results.rows.raw());
-          },
-          (_, error) => {
-            console.error("Erro ao buscar produtos:", error);
-            reject(error);
-          }
-        );
-      });
-    });
-  } catch (error) {
-    console.error("Erro ao buscar produtos:", error);
-  }
-};
-
-export const clearUserProducts = async (userId: string) => {
-  try {
-    await db.transaction(async (tx) => {
-      await tx.executeSql(`DELETE FROM scanned_products WHERE userId = ?;`, [userId]);
-    });
-    console.log("Produtos apagados para o usuário:", userId);
-  } catch (error) {
-    console.error("Erro ao apagar produtos:", error);
+    console.error('Erro ao limpar produtos:', error);
   }
 };
