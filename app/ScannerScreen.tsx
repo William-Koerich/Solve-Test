@@ -22,11 +22,11 @@ export default function ScannerScreen() {
 
   const handleBarcodeScanned = ({ data }: { data: string }) => {
     if (isScanningBlocked) return;
-
+  
     setIsScanningBlocked(true); // Bloqueia novas leituras enquanto processa
-
+  
     const product = findProductByCode(data);
-
+  
     if (product) {
       Alert.alert("Produto encontrado!", `${product.name}\nPreço: ${product.price}`, [
         {
@@ -39,7 +39,7 @@ export default function ScannerScreen() {
         },
       ]);
     } else {
-      Alert.alert("Produto não encontrado", `Esse código de barras ${data} não está cadastrado.`, [
+      Alert.alert("Produto não encontrado", `O produto com o código de barras ${data} não está cadastrado.`, [
         {
           text: "Tentar novamente",
           onPress: () => {
